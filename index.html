@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5eee3">
+  <title>Veliora — Studio</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+
+    :root {
+      --ink: #302017;
+      --muted: #69564b;
+      --paper: #f5eee3;
+      --white: #fffaf1;
+      --line: #e5d6c0;
+      --plum: #59321f;
+      --plum-dark: #3f2114;
+      --rose: #f4e4df;
+      --sage: #e4eee4;
+      --gold: #bd8615;
+      --shadow: 0 12px 34px rgba(53, 31, 18, .08);
+      font-family: "DM Sans", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; }
+    .bottom-nav {
+      position: fixed; inset: auto 0 0; z-index: 5; display: flex; justify-content: center;
+      padding: 8px 16px max(8px, env(safe-area-inset-bottom)); border-top: 1px solid var(--line);
+      background: rgba(255,250,241,.97); backdrop-filter: blur(12px);
+    }
+    .nav { width: min(100%, 760px); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .nav button {
+      min-height: 56px; border: 0; background: transparent; color: #59483e; text-align: center;
+      padding: 7px 10px; border-radius: 10px; display: flex; gap: 5px; align-items: center;
+      justify-content: center; font-size: 13px; font-weight: 700;
+      transition: background .18s, color .18s, transform .18s;
+    }
+    .nav button:hover { background: #f1e7d8; }
+    .nav button.active { color: var(--plum-dark); background: #efe1c9; }
+    .nav-icon { width: 20px; text-align: center; font-size: 18px; line-height: 1; }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .brand-mark {
+      height: 34px; width: 34px; border: 2px solid var(--gold); border-radius: 50%;
+      display: grid; place-items: center; color: #fffaf1; background: var(--plum);
+      box-shadow: inset 0 0 0 3px var(--plum-dark); font: 600 19px "Playfair Display", serif;
+    }
+    .brand-name { font: 600 20px "Playfair Display", serif; letter-spacing: .3px; }
+    main { max-width: 1240px; margin: 0 auto; padding: 30px 40px 112px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 30px; }
+    .eyebrow { font-size: 10px; color: var(--muted); letter-spacing: 1.7px; text-transform: uppercase; font-weight: 700; }
+    h1 { margin: 4px 0 0; font: 600 clamp(27px, 3vw, 36px) "Playfair Display", serif; letter-spacing: -.5px; }
+    .greeting-note { color: var(--plum); font-size: 14px; font-weight: 600; margin-top: 5px; }
+    .date-label { color: var(--muted); font-size: 12px; margin-top: 5px; }
+    .top-actions { display: flex; gap: 10px; align-items: center; }
+    .today-pill { color: #766c66; font-size: 12px; padding: 10px 13px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); }
+    .button {
+      min-height: 46px; border: 0; border-radius: 9px; padding: 12px 17px; color: white; background: var(--plum);
+      font-size: 14px; font-weight: 700; transition: background .18s, transform .18s, box-shadow .18s;
+    }
+    .button:hover { background: var(--plum-dark); transform: translateY(-2px); box-shadow: 0 6px 14px rgba(63,33,20,.16); }
+    button:active { transform: scale(.97); }
+    .button.secondary { color: var(--plum-dark); border: 1px solid var(--line); background: var(--white); }
+    .button.secondary:hover { background: #f4f0eb; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 30px 0 15px; }
+    .section-heading h2 { font: 600 20px "Playfair Display", serif; margin: 0; }
+    .section-heading p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; }
+    .stat, .panel { background: var(--white); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+    .stat { min-height: 134px; padding: 19px; position: relative; overflow: hidden; }
+    .stat-top { display: flex; justify-content: space-between; align-items: center; }
+    .stat-label { color: var(--muted); font-size: 11px; font-weight: 600; }
+    .stat-icon { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; background: var(--rose); font-size: 15px; }
+    .stat:nth-child(2) .stat-icon { background: var(--sage); }
+    .stat:nth-child(3) .stat-icon { background: #f4ecdc; }
+    .stat:nth-child(4) .stat-icon { background: #e8edf0; }
+    .stat-value { font: 600 30px "Playfair Display", serif; margin-top: 17px; }
+    .stat-sub { color: var(--muted); font-size: 10px; margin-top: 2px; }
+    .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(260px, .85fr); gap: 16px; align-items: start; }
+    .panel { padding: 20px; }
+    .panel-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 17px; }
+    .panel-title h3 { margin: 0; font: 600 17px "Playfair Display", serif; }
+    .text-button { min-height: 44px; color: var(--plum); font-size: 12px; font-weight: 700; border: 0; background: none; padding: 10px; }
+    .text-button:hover { text-decoration: underline; }
+    .batch-list { display: grid; gap: 0; }
+    .batch-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 13px 0; border-top: 1px solid #f0ece6; }
+    .batch-row:first-child { border-top: 0; padding-top: 0; }
+    .batch-flavor { font-weight: 700; font-size: 12px; }
+    .flavor-tag { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; }
+    .flavor-tag::before { content: ""; width: 9px; height: 9px; flex: 0 0 9px; border-radius: 50%; background: var(--flavor-color, var(--gold)); }
+    .flavor-chocolate { --flavor-color: #542917; }
+    .flavor-cookie { --flavor-color: #9b7955; }
+    .flavor-mango { --flavor-color: #d49a12; }
+    .flavor-strawberry { --flavor-color: #b94d57; }
+    .batch-meta { color: var(--muted); font-size: 10px; margin-top: 4px; }
+    .badge { white-space: nowrap; display: inline-flex; align-items: center; padding: 6px 9px; border-radius: 20px; background: var(--sage); color: #536653; font-size: 10px; font-weight: 700; }
+    .badge.warning { background: #f5ead8; color: #71440d; }
+    .badge.critical, .badge.expired { background: #f5dfdc; color: #8b2923; }
+    .temperature-card { background: #f5f2ed; border-radius: 10px; padding: 17px; }
+    .temperature-current { display: flex; justify-content: space-between; align-items: center; }
+    .temperature-number { font: 600 38px "Playfair Display", serif; }
+    .temperature-number span { font-size: 17px; color: var(--muted); }
+    .temperature-status { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: #31583a; background: #e0eee1; padding: 8px 10px; border-radius: 20px; }
+    .temperature-status.too-warm, .badge.too-warm { color: #8b1f18; background: #f8dfdb; }
+    .temperature-warning { margin: 12px 0 0; padding: 11px 12px; border-radius: 8px; background: #f8dfdb; color: #7f1d17; border: 1px solid #e8b6af; font-size: 13px; font-weight: 700; line-height: 1.45; }
+    .temperature-warning[hidden] { display: none; }
+    .temperature-foot { display: flex; justify-content: space-between; margin-top: 9px; color: var(--muted); font-size: 10px; }
+    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 12px; }
+    .quick-actions button { min-height: 68px; text-align: left; padding: 13px 14px; border: 1px solid var(--plum-dark); border-left: 4px solid var(--gold); border-radius: 9px; background: var(--plum); color: #fffaf1; font-size: 14px; font-weight: 700; box-shadow: 0 4px 10px rgba(63,33,20,.12); transition: background .18s, transform .18s, box-shadow .18s; }
+    .quick-actions button span { display: block; color: #f2dfc4; font-size: 12px; font-weight: 500; margin-top: 5px; }
+    .quick-actions button:hover { background: var(--plum-dark); transform: translateY(-2px); box-shadow: 0 8px 16px rgba(63,33,20,.2); }
+    .quick-actions button:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+    .form-panel { margin-bottom: 16px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .field { display: grid; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { font-size: 14px; color: #3f2d22; font-weight: 700; }
+    input, select, textarea { width: 100%; min-height: 46px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); color: var(--ink); padding: 11px 12px; font-size: 14px; outline: 0; }
+    input::placeholder, textarea::placeholder { color: #665247; opacity: 1; }
+    input:focus, select:focus, textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(189,134,21,.17); }
+    input[readonly] { background: #f7f5f0; color: var(--plum-dark); font-weight: 700; }
+    .form-actions { display: flex; align-items: center; gap: 11px; margin-top: 15px; }
+    .form-hint { color: #5d483b; font-size: 12px; }
+    .quantity-setup { display: flex; align-items: center; gap: 6px; min-width: 170px; }
+    .quantity-setup input { min-width: 76px; min-height: 44px; padding: 8px; }
+    .quantity-setup button { min-height: 44px; white-space: nowrap; }
+    .flavor-key { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 2px; }
+    .flavor-key .flavor-tag { font-size: 12px; }
+    .table-wrap { width: 100%; overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; min-width: 610px; text-align: left; }
+    th { color: #958b84; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; padding: 0 11px 11px; }
+    td { border-top: 1px solid #f0ece6; padding: 12px 11px; font-size: 11px; vertical-align: middle; }
+    td:first-child, th:first-child { padding-left: 0; }
+    .empty { text-align: center; color: var(--muted); padding: 27px 12px !important; font-size: 12px; }
+    .toast { position: fixed; left: 50%; bottom: 25px; transform: translate(-50%, 15px); padding: 12px 17px; background: #342a2c; color: white; border-radius: 8px; font-size: 12px; opacity: 0; pointer-events: none; transition: .2s; z-index: 8; box-shadow: 0 8px 20px #0002; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .danger { min-height: 44px; color: #8b2923; background: transparent; border: 0; padding: 8px; font-size: 12px; font-weight: 700; }
+    .danger:hover { text-decoration: underline; }
+    .empty-state { display: grid; justify-items: center; gap: 10px; padding: 22px 12px; color: var(--muted); text-align: center; }
+    .empty-state p { margin: 0; font-size: 13px; }
+    .empty-action { min-height: 44px; padding: 9px 13px; font-size: 12px; }
+    .stat, .panel { transition: transform .2s ease, box-shadow .2s ease; }
+    .stat:hover, .panel:hover { box-shadow: 0 14px 34px rgba(53,31,18,.11); }
+    @media (max-width: 1020px) {
+      main { padding: 28px 24px 112px; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 680px) {
+      main { padding: 20px 16px 112px; }
+      .topbar { margin-bottom: 22px; align-items: flex-start; }
+      .top-actions { flex-direction: column-reverse; align-items: flex-end; gap: 7px; }
+      .today-pill { display: none; }
+      .top-actions .button { min-height: 46px; padding: 10px 12px; font-size: 12px; }
+      .top-actions { max-width: 150px; }
+      .bottom-nav { padding-left: 6px; padding-right: 6px; }
+      .nav { gap: 2px; }
+      .nav button { flex-direction: column; gap: 4px; padding: 5px 1px; font-size: 10px; }
+      .nav-icon { font-size: 18px; }
+      .stats { gap: 10px; }
+      .stat { min-height: 115px; padding: 14px; }
+      .stat-value { font-size: 26px; margin-top: 12px; }
+      .stat-label { font-size: 10px; }
+      .panel { padding: 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+      .section-heading { margin-top: 24px; }
+      .section-heading { align-items: flex-start; }
+      .form-actions { align-items: flex-start; flex-direction: column; }
+      .temperature-foot { gap: 10px; flex-direction: column; }
+      .quick-actions { grid-template-columns: 1fr; }
+      .table-wrap { margin-right: -6px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <main>
+      <header class="topbar">
+        <div>
+          <div class="brand"><div class="brand-mark">V</div><div class="brand-name">Veliora</div></div>
+          <div class="eyebrow" id="pageEyebrow">Your kitchen, in good order</div>
+          <h1 id="pageTitle">Good morning</h1>
+          <div class="greeting-note" id="greetingNote">Here's your Veliora kitchen today,</div>
+          <div class="date-label" id="todayLabel"></div>
+        </div>
+        <div class="top-actions">
+          <div class="today-pill" id="todayPill"></div>
+          <button class="button secondary" id="exportButton" type="button">Export backup CSV</button>
+          <button class="button" id="headerAction">＋ New batch</button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-dashboard">
+        <div class="stats">
+          <article class="stat"><div class="stat-top"><span class="stat-label">Active batches</span><span class="stat-icon">◉</span></div><div class="stat-value" id="statBatches">0</div><div class="stat-sub">In production rotation</div></article>
+          <article class="stat"><div class="stat-top"><span class="stat-label">Units at bakeries</span><span class="stat-icon">▤</span></div><div class="stat-value" id="statUnits">0</div><div class="stat-sub">Current stock on hand</div></article>
+          <article class="stat"><div class="stat-top"><span class="stat-label">Expiring soon</span><span class="stat-icon">⌛</span></div><div class="stat-value" id="statExpiring">0</div><div class="stat-sub">Within the next 30 days</div></article>
+          <article class="stat"><div class="stat-top"><span class="stat-label">Latest freezer temp</span><span class="stat-icon">❄</span></div><div class="stat-value" id="statTemp">—</div><div class="stat-sub" id="statTempDate">No readings yet</div></article>
+        </div>
+        <div class="dashboard-grid">
+          <section>
+            <div class="section-heading"><div><h2>On the horizon</h2><p>Batches with an expiry date in the next 30 days</p></div><button class="text-button" data-goto="batches">View all batches →</button></div>
+            <div class="panel"><div class="batch-list" id="expiringList"></div></div>
+          </section>
+          <section>
+            <div class="section-heading"><div><h2>Freezer check</h2><p>Your latest daily temperature reading</p></div></div>
+            <div class="panel">
+              <div class="temperature-card"><div class="temperature-current"><div class="temperature-number" id="latestTemp">—<span> °C</span></div><div class="temperature-status" id="tempStatus">Awaiting reading</div></div><div class="temperature-foot"><span id="latestTempDate">No readings recorded</span><span>Target: −18 °C or colder</span></div><p class="temperature-warning" id="freezerWarning" role="alert" hidden></p></div>
+              <div class="quick-actions"><button data-goto="batches">＋ Log a batch<span>Record fresh production</span></button><button data-goto="freezer">＋ Log temperature<span>Keep your daily check</span></button></div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-batches">
+        <div class="panel form-panel">
+          <div class="panel-title"><h3>Log a new batch</h3></div>
+          <form id="batchForm">
+            <div class="form-grid">
+              <div class="field"><label for="batchFlavor">Flavor</label><select id="batchFlavor" name="flavor" required><option value="">Choose a flavor</option><option>Belgian chocolate fudge</option><option>Cookie and cream</option><option>Mango saffron</option><option>Strawberry cheesecake</option></select><div class="flavor-key" aria-label="Flavor color key"><span class="flavor-tag flavor-chocolate">Belgian chocolate fudge</span><span class="flavor-tag flavor-cookie">Cookie and cream</span><span class="flavor-tag flavor-mango">Mango saffron</span><span class="flavor-tag flavor-strawberry">Strawberry cheesecake</span></div></div>
+              <div class="field"><label for="batchDate">Production date</label><input id="batchDate" name="productionDate" type="date" required></div>
+              <div class="field"><label for="batchQuantity">Produced quantity (units)</label><input id="batchQuantity" name="producedQuantity" type="number" min="1" max="1000000" step="1" placeholder="e.g. 120" required></div>
+              <div class="field"><label for="batchWeeks">Shelf life (weeks)</label><input id="batchWeeks" name="shelfLifeWeeks" type="number" min="1" max="104" step="1" placeholder="e.g. 8" required></div>
+              <div class="field"><label for="batchExpiry">Calculated expiry date</label><input id="batchExpiry" readonly placeholder="Choose date and shelf life"></div>
+            </div>
+            <div class="form-actions"><button class="button" type="submit">Save batch</button><span class="form-hint">Expiry is calculated from the production date.</span></div>
+          </form>
+        </div>
+        <div class="panel"><div class="panel-title"><h3>All batches</h3><span class="form-hint" id="batchCount"></span></div><div class="table-wrap"><table><thead><tr><th>Flavor</th><th>Production date</th><th>Produced</th><th>Available</th><th>Shelf life</th><th>Expires</th><th>Status</th><th></th></tr></thead><tbody id="batchTable"></tbody></table></div><p class="form-hint">For older batches, set the total produced quantity; previously recorded deliveries are deducted automatically.</p></div>
+      </section>
+
+      <section class="view" id="view-stock">
+        <div class="section-heading"><div><h2>Bakery stock</h2><p>Log deliveries and sales for each bakery to keep stock on hand current.</p></div></div>
+        <div class="panel form-panel">
+          <div class="panel-title"><h3>Record stock movement</h3></div>
+          <form id="stockForm">
+            <div class="form-grid">
+              <div class="field"><label for="stockBakery">Bakery</label><input id="stockBakery" name="bakery" placeholder="Bakery name" required maxlength="70" list="bakeryOptions"><datalist id="bakeryOptions"></datalist><span class="form-hint" id="bakeryAvailability">Choose a bakery and batch to see units on hand.</span></div>
+              <div class="field"><label for="stockBatch">Batch / flavor</label><select id="stockBatch" name="batchId" required></select><span class="form-hint" id="batchAvailability">Choose a batch to see available units.</span></div>
+              <div class="field"><label for="stockDate">Date</label><input id="stockDate" name="date" type="date" required></div>
+              <div class="field"><label for="stockDelivered">Units delivered</label><input id="stockDelivered" name="delivered" type="number" min="0" max="0" step="1" value="0" required></div>
+              <div class="field"><label for="stockSold">Units sold</label><input id="stockSold" name="sold" type="number" min="0" step="1" value="0" required></div>
+            </div>
+            <div class="form-actions"><button class="button" type="submit">Save stock movement</button><span class="form-hint">Deliveries reduce batch availability. Sales cannot exceed bakery stock after delivery.</span></div>
+          </form>
+        </div>
+        <div class="panel"><div class="panel-title"><h3>Stock by bakery and batch</h3></div><div class="table-wrap"><table><thead><tr><th>Bakery</th><th>Batch / flavor</th><th>Units delivered</th><th>Units sold</th><th>Units left</th></tr></thead><tbody id="stockSummary"></tbody></table></div></div>
+        <div class="section-heading"><div><h2>Movement history</h2><p>Most recent delivery and sales entries first.</p></div></div>
+        <div class="panel"><div class="table-wrap"><table><thead><tr><th>Date</th><th>Bakery</th><th>Flavor</th><th>Delivered</th><th>Sold</th><th></th></tr></thead><tbody id="stockHistory"></tbody></table></div></div>
+      </section>
+
+      <section class="view" id="view-freezer">
+        <div class="section-heading"><div><h2>Freezer log</h2><p>A daily record helps keep every dessert at its best.</p></div></div>
+        <div class="panel form-panel">
+          <div class="panel-title"><h3>Log a daily temperature</h3></div>
+          <form id="tempForm">
+            <div class="form-grid">
+              <div class="field"><label for="tempDate">Date</label><input id="tempDate" name="date" type="date" required></div>
+              <div class="field"><label for="tempValue">Temperature (°C)</label><input id="tempValue" name="temperature" type="number" step="0.1" min="-60" max="30" placeholder="e.g. −18.5" required></div>
+              <div class="field full"><label for="tempNote">Note (optional)</label><input id="tempNote" name="note" maxlength="140" placeholder="Anything to note about today's check"></div>
+            </div>
+            <div class="form-actions"><button class="button" type="submit">Save temperature</button><span class="form-hint">One reading per date; a new entry updates that day's reading.</span></div>
+          </form>
+        </div>
+        <div class="panel"><div class="panel-title"><h3>Temperature history</h3></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Temperature</th><th>Check</th><th>Note</th><th></th></tr></thead><tbody id="tempHistory"></tbody></table></div></div>
+      </section>
+    </main>
+  </div>
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <div class="nav">
+      <button class="active" data-view="dashboard"><span class="nav-icon">⌂</span>Overview</button>
+      <button data-view="batches"><span class="nav-icon">◉</span>Production</button>
+      <button data-view="stock"><span class="nav-icon">▤</span>Bakery stock</button>
+      <button data-view="freezer"><span class="nav-icon">❄</span>Freezer log</button>
+    </div>
+  </nav>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = "veliora-studio-data-v1";
+      const LEGACY_STORAGE_KEY = "valyora-studio-data-v1";
+      const emptyData = { batches: [], movements: [], temperatures: [] };
+      const today = new Date();
+      const isoToday = localDateString(today);
+      let data = loadData();
+      let activeView = "dashboard";
+
+      function localDateString(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+      }
+      function loadData() {
+        try {
+          const current = localStorage.getItem(STORAGE_KEY);
+          const stored = current || localStorage.getItem(LEGACY_STORAGE_KEY);
+          if (!stored) return { ...emptyData };
+          const parsed = JSON.parse(stored);
+          const needsBatchMigration = Array.isArray(parsed.batches) && parsed.batches.some(batch =>
+            !Number.isInteger(Number(batch.producedQuantity)) || !Number.isInteger(Number(batch.availableQuantity)) || typeof batch.quantityTracked !== "boolean"
+          );
+          const records = {
+            batches: Array.isArray(parsed.batches) ? parsed.batches.map(batch => {
+              const quantityTracked = typeof batch.quantityTracked === "boolean"
+                ? batch.quantityTracked
+                : Number.isInteger(Number(batch.producedQuantity)) && Number.isInteger(Number(batch.availableQuantity));
+              const producedQuantity = Number.isInteger(Number(batch.producedQuantity)) ? Number(batch.producedQuantity) : 0;
+              return {
+                ...batch,
+                producedQuantity,
+                availableQuantity: Number.isInteger(Number(batch.availableQuantity)) ? Number(batch.availableQuantity) : producedQuantity,
+                quantityTracked
+              };
+            }) : [],
+            movements: Array.isArray(parsed.movements) ? parsed.movements : [],
+            temperatures: Array.isArray(parsed.temperatures) ? parsed.temperatures : []
+          };
+          if (!current || needsBatchMigration) localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+          return records;
+        } catch (error) {
+          console.error("Unable to load Veliora records from browser storage.", error);
+          return { ...emptyData };
+        }
+      }
+      function saveData() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          return true;
+        } catch (error) {
+          console.error("Unable to save Veliora records to browser storage.", error);
+          showToast("Could not save. Check browser storage is available.");
+          return false;
+        }
+      }
+      function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+      }
+      function formatDate(value, options = { day: "numeric", month: "short", year: "numeric" }) {
+        if (!value) return "—";
+        const [year, month, day] = value.split("-").map(Number);
+        return new Intl.DateTimeFormat(undefined, options).format(new Date(year, month - 1, day));
+      }
+      function addWeeks(dateValue, weeks) {
+        const [year, month, day] = dateValue.split("-").map(Number);
+        const result = new Date(year, month - 1, day);
+        result.setDate(result.getDate() + Number(weeks) * 7);
+        return localDateString(result);
+      }
+      function daysUntil(dateValue) {
+        const [year, month, day] = dateValue.split("-").map(Number);
+        const target = Date.UTC(year, month - 1, day);
+        const [ty, tm, td] = isoToday.split("-").map(Number);
+        return Math.round((target - Date.UTC(ty, tm - 1, td)) / 86400000);
+      }
+      function getBatch(id) { return data.batches.find(batch => batch.id === id); }
+      function getExpiry(batch) { return addWeeks(batch.productionDate, batch.shelfLifeWeeks); }
+      function flavorClass(flavor) {
+        const normalized = String(flavor).toLowerCase();
+        if (normalized === "belgian chocolate fudge") return "flavor-chocolate";
+        if (normalized === "cookie and cream") return "flavor-cookie";
+        if (normalized === "mango saffron") return "flavor-mango";
+        if (normalized === "strawberry cheesecake") return "flavor-strawberry";
+        return "";
+      }
+      function expiryBadge(days) {
+        if (days < 0) return '<span class="badge expired">Expired</span>';
+        if (days < 14) return `<span class="badge critical">${days === 0 ? "Expires today" : `Expires in ${days} ${days === 1 ? "day" : "days"}`}</span>`;
+        if (days <= 30) return `<span class="badge warning">Expires in ${days} days</span>`;
+        return '<span class="badge">Fresh</span>';
+      }
+      function getExpiring() {
+        return data.batches.map(batch => ({ ...batch, expiry: getExpiry(batch), days: daysUntil(getExpiry(batch)) }))
+          .filter(batch => batch.days >= 0 && batch.days <= 30).sort((a, b) => a.days - b.days);
+      }
+      function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.classList.add("show");
+        window.clearTimeout(showToast.timer);
+        showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 2800);
+      }
+      function csvCell(value) {
+        const text = String(value ?? "");
+        return `"${text.replace(/"/g, '""')}"`;
+      }
+      function exportCsv() {
+        const headers = ["record_type", "id", "flavor", "production_date", "produced_quantity", "available_quantity", "shelf_life_weeks", "expiry_date", "bakery", "batch_id", "date", "delivered", "sold", "temperature_c", "note"];
+        const rows = [
+          ...data.batches.map(batch => ({
+            record_type: "batch", id: batch.id, flavor: batch.flavor, production_date: batch.productionDate,
+            produced_quantity: batch.producedQuantity, available_quantity: batch.availableQuantity,
+            shelf_life_weeks: batch.shelfLifeWeeks, expiry_date: getExpiry(batch)
+          })),
+          ...data.movements.map(movement => ({
+            record_type: "stock_movement", id: movement.id, bakery: movement.bakery, batch_id: movement.batchId,
+            date: movement.date, delivered: movement.delivered, sold: movement.sold
+          })),
+          ...data.temperatures.map(reading => ({
+            record_type: "freezer_temperature", id: reading.id, date: reading.date,
+            temperature_c: reading.temperature, note: reading.note
+          }))
+        ];
+        const csv = [headers, ...rows.map(row => headers.map(header => row[header]))]
+          .map(row => row.map(csvCell).join(",")).join("\r\n");
+        const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `veliora-backup-${isoToday}.csv`;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        showToast(`Backup exported with ${rows.length} ${rows.length === 1 ? "record" : "records"}.`);
+      }
+      function emptyRow(columns, message, actionLabel, focusId) {
+        const action = actionLabel ? `<button class="button secondary empty-action" data-focus="${focusId}">${actionLabel}</button>` : "";
+        return `<tr><td class="empty" colspan="${columns}"><div class="empty-state"><p>${message}</p>${action}</div></td></tr>`;
+      }
+      function setView(view) {
+        activeView = view;
+        document.querySelectorAll(".view").forEach(el => el.classList.toggle("active", el.id === `view-${view}`));
+        document.querySelectorAll(".nav button").forEach(el => el.classList.toggle("active", el.dataset.view === view));
+        const titles = {
+          dashboard: ["Your kitchen, in good order", "Good morning", "＋ New batch"],
+          batches: ["Fresh from the kitchen", "Production batches", "＋ New batch"],
+          stock: ["A little treat, everywhere", "Bakery stock", "＋ Record stock"],
+          freezer: ["Keeping every bite perfect", "Freezer log", "＋ Log temperature"]
+        };
+        document.getElementById("pageEyebrow").textContent = titles[view][0];
+        document.getElementById("pageTitle").textContent = titles[view][1];
+        document.getElementById("greetingNote").hidden = view !== "dashboard";
+        document.getElementById("headerAction").textContent = titles[view][2];
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      function renderBatches() {
+        const batches = [...data.batches].sort((a, b) => b.productionDate.localeCompare(a.productionDate));
+        document.getElementById("batchCount").textContent = `${batches.length} ${batches.length === 1 ? "batch" : "batches"}`;
+        document.getElementById("batchTable").innerHTML = batches.length ? batches.map(batch => {
+          const expiry = getExpiry(batch);
+          const days = daysUntil(expiry);
+          const flavor = `<span class="flavor-tag ${flavorClass(batch.flavor)}">${escapeHtml(batch.flavor)}</span>`;
+          const quantity = batch.quantityTracked
+            ? `<strong>${batch.availableQuantity}</strong>`
+            : `<div class="quantity-setup"><input type="number" min="1" max="1000000" step="1" placeholder="Total units" aria-label="Total units produced for ${escapeHtml(batch.flavor)}" data-quantity-for="${escapeHtml(batch.id)}"><button class="text-button" type="button" title="Previously recorded deliveries will be deducted." aria-label="Set total quantity for ${escapeHtml(batch.flavor)}" data-set-quantity="${escapeHtml(batch.id)}">Set</button></div>`;
+          return `<tr><td>${flavor}</td><td>${formatDate(batch.productionDate)}</td><td>${batch.quantityTracked ? batch.producedQuantity : "—"}</td><td>${quantity}</td><td>${batch.shelfLifeWeeks} ${batch.shelfLifeWeeks === 1 ? "week" : "weeks"}</td><td>${formatDate(expiry)}</td><td>${expiryBadge(days)}</td><td><button class="danger" data-delete="batch" data-id="${escapeHtml(batch.id)}">Remove</button></td></tr>`;
+        }).join("") : emptyRow(8, "No batches yet. Add your first Veliora batch.", "Add your first batch", "batchFlavor");
+        const select = document.getElementById("stockBatch");
+        const selectedBatchId = select.value;
+        select.innerHTML = batches.length
+          ? `<option value="">Choose a batch</option>${batches.map(batch => `<option value="${escapeHtml(batch.id)}">${escapeHtml(batch.flavor)} · ${formatDate(batch.productionDate, { day: "numeric", month: "short" })} · ${batch.availableQuantity} available</option>`).join("")}`
+          : '<option value="">Add a batch first</option>';
+        if (batches.some(batch => batch.id === selectedBatchId)) select.value = selectedBatchId;
+        updateBatchAvailability();
+      }
+      function stockGroups() {
+        const map = new Map();
+        data.movements.forEach(movement => {
+          const key = `${movement.bakery.toLowerCase()}|${movement.batchId}`;
+          if (!map.has(key)) map.set(key, { bakery: movement.bakery, batchId: movement.batchId, delivered: 0, sold: 0 });
+          const group = map.get(key);
+          group.delivered += Number(movement.delivered);
+          group.sold += Number(movement.sold);
+        });
+        return [...map.values()].sort((a, b) => a.bakery.localeCompare(b.bakery));
+      }
+      function bakeryStock(bakery, batchId) {
+        if (!bakery || !batchId) return null;
+        return stockGroups().find(group => group.bakery.toLowerCase() === bakery.trim().toLowerCase() && group.batchId === batchId) || null;
+      }
+      function renderStock() {
+        const groups = stockGroups();
+        document.getElementById("stockSummary").innerHTML = groups.length ? groups.map(group => {
+          const batch = getBatch(group.batchId);
+          const flavor = batch ? `<span class="flavor-tag ${flavorClass(batch.flavor)}">${escapeHtml(batch.flavor)}</span>` : "Removed batch";
+          return `<tr><td><strong>${escapeHtml(group.bakery)}</strong></td><td>${flavor}</td><td>${group.delivered}</td><td>${group.sold}</td><td><strong>${group.delivered - group.sold}</strong></td></tr>`;
+        }).join("") : emptyRow(5, "No stock has been recorded yet.", "Record stock", "stockBakery");
+        const history = [...data.movements].sort((a, b) => b.date.localeCompare(a.date));
+        document.getElementById("stockHistory").innerHTML = history.length ? history.map(movement => {
+          const batch = getBatch(movement.batchId);
+          const flavor = batch ? `<span class="flavor-tag ${flavorClass(batch.flavor)}">${escapeHtml(batch.flavor)}</span>` : "Removed batch";
+          return `<tr><td>${formatDate(movement.date)}</td><td>${escapeHtml(movement.bakery)}</td><td>${flavor}</td><td>${movement.delivered}</td><td>${movement.sold}</td><td><button class="danger" data-delete="movement" data-id="${escapeHtml(movement.id)}">Remove</button></td></tr>`;
+        }).join("") : emptyRow(6, "Stock movements will appear here.", "Record stock", "stockBakery");
+        const bakeries = [...new Set(data.movements.map(item => item.bakery))].sort((a, b) => a.localeCompare(b));
+        document.getElementById("bakeryOptions").innerHTML = bakeries.map(name => `<option value="${escapeHtml(name)}"></option>`).join("");
+        updateBakeryAvailability();
+      }
+      function renderTemperatures() {
+        const readings = [...data.temperatures].sort((a, b) => b.date.localeCompare(a.date));
+        document.getElementById("tempHistory").innerHTML = readings.length ? readings.map(reading => {
+          const ok = Number(reading.temperature) <= -18;
+          return `<tr><td>${formatDate(reading.date)}</td><td><strong>${Number(reading.temperature).toFixed(1)} °C</strong></td><td><span class="badge ${ok ? "" : "too-warm"}">${ok ? "On target" : "Too warm"}</span></td><td>${escapeHtml(reading.note || "—")}</td><td><button class="danger" data-delete="temperature" data-id="${escapeHtml(reading.id)}">Remove</button></td></tr>`;
+        }).join("") : emptyRow(5, "No temperature readings yet. Log today's check.", "Log temperature", "tempValue");
+      }
+      function renderDashboard() {
+        const expiring = getExpiring();
+        const latest = [...data.temperatures].sort((a, b) => b.date.localeCompare(a.date))[0];
+        const units = stockGroups().reduce((sum, group) => sum + group.delivered - group.sold, 0);
+        document.getElementById("statBatches").textContent = data.batches.filter(batch => daysUntil(getExpiry(batch)) >= 0).length;
+        document.getElementById("statUnits").textContent = units;
+        document.getElementById("statExpiring").textContent = expiring.length;
+        document.getElementById("statTemp").textContent = latest ? `${Number(latest.temperature).toFixed(1)}°` : "—";
+        document.getElementById("statTempDate").textContent = latest ? `Logged ${formatDate(latest.date)}` : "No readings yet";
+        document.getElementById("latestTemp").innerHTML = latest ? `${Number(latest.temperature).toFixed(1)}<span> °C</span>` : `—<span> °C</span>`;
+        document.getElementById("latestTempDate").textContent = latest ? `Last checked ${formatDate(latest.date)}` : "No readings recorded";
+        const tempStatus = document.getElementById("tempStatus");
+        const freezerWarning = document.getElementById("freezerWarning");
+        const tooWarm = latest && Number(latest.temperature) > -18;
+        tempStatus.textContent = latest ? tooWarm ? "Too warm" : "On target" : "Awaiting reading";
+        tempStatus.classList.toggle("too-warm", Boolean(tooWarm));
+        freezerWarning.hidden = !tooWarm;
+        freezerWarning.textContent = tooWarm
+          ? `Freezer too warm: ${Number(latest.temperature).toFixed(1)} °C is warmer than the −18 °C target. Check the freezer now.`
+          : "";
+        document.getElementById("expiringList").innerHTML = expiring.length ? expiring.slice(0, 5).map(batch => {
+          const due = batch.days === 0 ? "Expires today" : `Expires in ${batch.days} ${batch.days === 1 ? "day" : "days"}`;
+          return `<div class="batch-row"><div><div class="batch-flavor flavor-tag ${flavorClass(batch.flavor)}">${escapeHtml(batch.flavor)}</div><div class="batch-meta">Made ${formatDate(batch.productionDate)} · ${batch.shelfLifeWeeks} ${batch.shelfLifeWeeks === 1 ? "week" : "weeks"}</div></div>${expiryBadge(batch.days)}</div>`;
+        }).join("") : data.batches.length
+          ? '<div class="empty-state"><p>Nothing expiring in the next 30 days. All is well.</p></div>'
+          : '<div class="empty-state"><p>No batches yet. Add your first Veliora batch.</p><button class="button secondary empty-action" data-focus="batchFlavor">Add your first batch</button></div>';
+      }
+      function render() {
+        renderBatches();
+        renderStock();
+        renderTemperatures();
+        renderDashboard();
+      }
+      document.querySelectorAll(".nav button").forEach(button => button.addEventListener("click", () => setView(button.dataset.view)));
+      document.querySelectorAll("[data-goto]").forEach(button => button.addEventListener("click", () => setView(button.dataset.goto)));
+      document.addEventListener("click", event => {
+        const button = event.target.closest("[data-focus]");
+        if (!button) return;
+        const target = button.dataset.focus;
+        const view = target.startsWith("stock") ? "stock" : target.startsWith("temp") ? "freezer" : "batches";
+        setView(view);
+        const field = document.getElementById(target);
+        field.focus({ preventScroll: true });
+        field.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      document.getElementById("headerAction").addEventListener("click", () => {
+        if (activeView === "stock") setView("stock");
+        else if (activeView === "freezer") setView("freezer");
+        else setView("batches");
+        const form = activeView === "stock" ? document.getElementById("stockBakery") : activeView === "freezer" ? document.getElementById("tempValue") : document.getElementById("batchFlavor");
+        form.focus({ preventScroll: true });
+        form.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      document.getElementById("exportButton").addEventListener("click", exportCsv);
+      function updateBatchAvailability() {
+        const selected = getBatch(document.getElementById("stockBatch").value);
+        const quantity = document.getElementById("stockDelivered");
+        document.getElementById("batchAvailability").textContent = selected
+          ? `${selected.availableQuantity} ${selected.availableQuantity === 1 ? "unit" : "units"} available in this batch.`
+          : "Choose a batch to see available units.";
+        quantity.max = selected ? String(selected.availableQuantity) : "0";
+        if (Number(quantity.value) > Number(quantity.max)) quantity.value = quantity.max;
+      }
+      function updateBakeryAvailability() {
+        const bakery = document.getElementById("stockBakery").value;
+        const batchId = document.getElementById("stockBatch").value;
+        const delivered = Number(document.getElementById("stockDelivered").value) || 0;
+        const soldInput = document.getElementById("stockSold");
+        const group = bakeryStock(bakery, batchId);
+        const onHand = group ? group.delivered - group.sold : 0;
+        const availableAfterDelivery = onHand + delivered;
+        document.getElementById("bakeryAvailability").textContent = bakery && batchId
+          ? `${onHand} ${onHand === 1 ? "unit" : "units"} currently on hand at this bakery.`
+          : "Choose a bakery and batch to see units on hand.";
+        soldInput.max = String(availableAfterDelivery);
+        if (Number(soldInput.value) > availableAfterDelivery) soldInput.value = String(availableAfterDelivery);
+      }
+      document.getElementById("stockBatch").addEventListener("change", updateBatchAvailability);
+      document.getElementById("stockBatch").addEventListener("change", updateBakeryAvailability);
+      document.getElementById("stockBakery").addEventListener("input", updateBakeryAvailability);
+      document.getElementById("stockDelivered").addEventListener("input", updateBakeryAvailability);
+      document.getElementById("batchDate").value = isoToday;
+      document.getElementById("stockDate").value = isoToday;
+      document.getElementById("tempDate").value = isoToday;
+      document.getElementById("todayLabel").textContent = new Intl.DateTimeFormat(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(today);
+      document.getElementById("todayPill").textContent = new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric" }).format(today);
+      const updateExpiry = () => {
+        const date = document.getElementById("batchDate").value;
+        const weeks = document.getElementById("batchWeeks").value;
+        document.getElementById("batchExpiry").value = date && weeks ? formatDate(addWeeks(date, weeks)) : "";
+      };
+      document.getElementById("batchDate").addEventListener("input", updateExpiry);
+      document.getElementById("batchWeeks").addEventListener("input", updateExpiry);
+      document.getElementById("batchForm").addEventListener("submit", event => {
+        event.preventDefault();
+        const form = new FormData(event.currentTarget);
+        const producedQuantity = Number(form.get("producedQuantity"));
+        const batch = { id: crypto.randomUUID(), flavor: String(form.get("flavor")).trim(), productionDate: String(form.get("productionDate")), producedQuantity, availableQuantity: producedQuantity, quantityTracked: true, shelfLifeWeeks: Number(form.get("shelfLifeWeeks")) };
+        if (!batch.flavor || !Number.isInteger(batch.producedQuantity) || batch.producedQuantity < 1 || batch.producedQuantity > 1000000 || !Number.isInteger(batch.shelfLifeWeeks) || batch.shelfLifeWeeks < 1 || batch.shelfLifeWeeks > 104 || !batch.productionDate) return showToast("Enter a flavor, date, produced quantity from 1 to 1,000,000, and shelf life from 1 to 104 weeks.");
+        data.batches.push(batch);
+        if (!saveData()) { data.batches.pop(); return; }
+        event.currentTarget.reset();
+        document.getElementById("batchDate").value = isoToday;
+        updateExpiry();
+        render();
+        showToast("Batch saved. Looking delicious.");
+      });
+      document.getElementById("stockForm").addEventListener("submit", event => {
+        event.preventDefault();
+        const form = new FormData(event.currentTarget);
+        const bakery = String(form.get("bakery")).trim();
+        const batchId = String(form.get("batchId"));
+        const delivered = Number(form.get("delivered"));
+        const sold = Number(form.get("sold"));
+        const date = String(form.get("date"));
+        const batch = getBatch(batchId);
+        const existing = bakeryStock(bakery, batchId);
+        if (!bakery || !batch || !Number.isInteger(delivered) || !Number.isInteger(sold) || delivered < 0 || sold < 0 || delivered + sold === 0 || !date) return showToast("Enter a bakery, batch, date, and at least one delivered or sold unit.");
+        if (delivered > batch.availableQuantity) return showToast(`Only ${batch.availableQuantity} units remain in this batch.`);
+        if (sold > (existing ? existing.delivered - existing.sold : 0) + delivered) return showToast("Sold units exceed available stock for this bakery and batch.");
+        data.movements.push({ id: crypto.randomUUID(), bakery, batchId, date, delivered, sold });
+        batch.availableQuantity -= delivered;
+        if (!saveData()) { data.movements.pop(); batch.availableQuantity += delivered; return; }
+        event.currentTarget.reset();
+        document.getElementById("stockDate").value = isoToday;
+        document.getElementById("stockDelivered").value = "0";
+        document.getElementById("stockSold").value = "0";
+        render();
+        showToast("Stock movement saved.");
+      });
+      document.getElementById("tempForm").addEventListener("submit", event => {
+        event.preventDefault();
+        const form = new FormData(event.currentTarget);
+        const date = String(form.get("date"));
+        const temperature = Number(form.get("temperature"));
+        const note = String(form.get("note") || "").trim();
+        if (!date || !Number.isFinite(temperature) || temperature < -60 || temperature > 30) return showToast("Enter a date and temperature between −60 °C and 30 °C.");
+        const prior = data.temperatures.findIndex(reading => reading.date === date);
+        const previousReading = prior >= 0 ? data.temperatures[prior] : null;
+        const reading = { id: prior >= 0 ? data.temperatures[prior].id : crypto.randomUUID(), date, temperature, note };
+        if (prior >= 0) data.temperatures[prior] = reading;
+        else data.temperatures.push(reading);
+        if (!saveData()) {
+          if (prior >= 0) data.temperatures[prior] = previousReading;
+          else data.temperatures.pop();
+          return;
+        }
+        event.currentTarget.reset();
+        document.getElementById("tempDate").value = isoToday;
+        render();
+        showToast(prior >= 0 ? "Today's freezer reading was updated." : "Temperature reading saved.");
+      });
+      document.addEventListener("click", event => {
+        const setQuantityButton = event.target.closest("[data-set-quantity]");
+        if (setQuantityButton) {
+          const batch = getBatch(setQuantityButton.dataset.setQuantity);
+          const quantityInput = document.querySelector(`[data-quantity-for="${CSS.escape(setQuantityButton.dataset.setQuantity)}"]`);
+          const producedQuantity = Number(quantityInput.value);
+          const alreadyDelivered = data.movements
+            .filter(movement => movement.batchId === setQuantityButton.dataset.setQuantity)
+            .reduce((total, movement) => total + Number(movement.delivered), 0);
+          if (!batch || !Number.isInteger(producedQuantity) || producedQuantity < 1 || producedQuantity > 1000000 || producedQuantity < alreadyDelivered) {
+            showToast(`Enter a valid total quantity of at least ${Math.max(1, alreadyDelivered)} units.`);
+            return;
+          }
+          const previous = { producedQuantity: batch.producedQuantity, availableQuantity: batch.availableQuantity, quantityTracked: batch.quantityTracked };
+          batch.producedQuantity = producedQuantity;
+          batch.availableQuantity = producedQuantity - alreadyDelivered;
+          batch.quantityTracked = true;
+          if (!saveData()) {
+            Object.assign(batch, previous);
+            return;
+          }
+          render();
+          showToast("Batch quantity updated.");
+          return;
+        }
+        const button = event.target.closest("[data-delete]");
+        if (!button) return;
+        const type = button.dataset.delete;
+        const id = button.dataset.id;
+        const collection = type === "batch" ? "batches" : type === "movement" ? "movements" : "temperatures";
+        const item = data[collection].find(record => record.id === id);
+        if (!item || !window.confirm(`Remove this ${type === "batch" ? "batch" : type === "movement" ? "stock movement" : "temperature reading"}?`)) return;
+        const previous = data[collection];
+        const affectedBatch = type === "movement" ? getBatch(item.batchId) : null;
+        data[collection] = previous.filter(record => record.id !== id);
+        if (affectedBatch) affectedBatch.availableQuantity += Number(item.delivered);
+        if (!saveData()) {
+          data[collection] = previous;
+          if (affectedBatch) affectedBatch.availableQuantity -= Number(item.delivered);
+        }
+        else showToast("Record removed.");
+        render();
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>
